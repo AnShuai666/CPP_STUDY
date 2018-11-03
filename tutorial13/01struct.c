@@ -37,10 +37,21 @@ int main()
 
 	printf("请输入姓名：");
 	fgets(person1.name,20,stdin);
-
+	
+	sperson person2 = person1;
 	
 	printf("姓名是：%s",person1.name);
 	printf("年龄是：%d\n",person1.age);
 	printf("身高是：%g\n",person1.height);
+	
+	printf("姓名是：%s",person2.name);
+	printf("年龄是：%d\n",person2.age);
+	printf("身高是：%g\n",person2.height);
+
+	sperson * p_person;
+	p_person = &person1;
+	printf("姓名是：%s",p_person->name);
+	printf("年龄是：%d\n",p_person->age);
+	printf("身高是：%g\n",p_person->height);
 	return 0;
 }
