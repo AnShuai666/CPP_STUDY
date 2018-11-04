@@ -1,0 +1,10 @@
+push 出现错误 ：fatal: You have not concluded your merge (MERGE_HEAD exists). Please, commit your changes before you merge.
+
+$:git fetch origin master   //从远程的origin的master主分支上获取最新版本到origin/master分支上
+$:git log -p master..origin/master //比较本地的master分支和origin/master分支的区别
+$:git merge origin/master          //合并
+
+
+然后进行 git commit -m "describe"
+
+然后就可以进行git push -u origin master了～！
