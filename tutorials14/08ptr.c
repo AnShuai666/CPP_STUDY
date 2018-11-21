@@ -13,6 +13,11 @@ void print(int arr[], int size)
 
 }
 
+void neg_cb(int *p_num)
+{
+	*p_num = 0 - *p_num;
+}
+
 void print_cb(int *p_num)
 {
 	printf("%d ",*p_num);
@@ -31,6 +36,10 @@ int main()
 {
 	int arr[] = {1, 2, 3, 4, 5};
 	print(arr,5);
+	printf("\n");
+	for_each(arr, 5, print_cb);
+	printf("\n");
+	for_each(arr, 5, neg_cb);
 	printf("\n");
 	for_each(arr, 5, print_cb);
 	printf("\n");
