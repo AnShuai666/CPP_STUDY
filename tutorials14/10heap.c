@@ -19,6 +19,7 @@ int *create(int size)
 	{
 		*(p_num + i) = rand()%36 +1;
 	}
+	return p_num;
 }
 
 int main()
