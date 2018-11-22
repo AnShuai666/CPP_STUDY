@@ -11,7 +11,7 @@ int main()
 		return 1;
 	for(int i =0; i < 5; i++)
 	{
-		fprintf(p_file, "%d", *(arr+i));
+		fprintf(p_file, "%d ", *(arr+i));
 	}
 	fclose(p_file);
 	p_file = NULL;
