@@ -8,6 +8,7 @@ typedef struct node
 {
 	int num;
 	struct node *p_next;
+	struct node *p_prev;
 } node;
 
 typedef struct 
@@ -54,6 +55,10 @@ int link_get_tail(const link* p_link, int *p_num);
 
 //根据编号找到数字
 int link_get(const link *p_link, int sn, int *p_num);
+
+void link_begin(link *p_link);
+
+int link_next(link *p_link, int *p_num);
 
 #endif //__01LINK_H__
 

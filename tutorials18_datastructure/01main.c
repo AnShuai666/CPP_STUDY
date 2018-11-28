@@ -45,7 +45,20 @@ int main()
 		printf("%d ",num);
 	}
 	printf("\n");
-	
+
+	link_begin(&lnk);
+	while(1)	
+	{	
+		tmp = link_next(&lnk,&num);
+		if(tmp == 0)
+		{
+			break;
+		}
+		printf("%d ",num);
+	}
+
+	printf("\n");
+
 
 	link_deinit(&lnk);
 
