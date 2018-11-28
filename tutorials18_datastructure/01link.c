@@ -2,19 +2,8 @@
 	链表演示
 */
 #include <stdlib.h>
-typedef struct node
-{
-	int num;
-	struct node *p_next;
-} node;
-
-typedef struct 
-{
-	node head;
-	node tail;
-} link;
-
-
+#include <stdio.h>
+#include "01link.h"
 //链表的初始化函数
 void link_init(link *p_link)
 {
@@ -52,6 +41,7 @@ int link_size(const link* p_link)
 			cnt++;
 		}
 	}
+	return cnt;
 }
 
 //把新数字插在最前面函数方法
@@ -113,7 +103,7 @@ void link_insert(link* p_link, int num)
 	}
 	p_node->num = num;
 	p_node->p_next = NULL;
-	node *tmp = NULL;
+	node *p_tmp = NULL;
 	for(p_tmp = &(p_link->head); p_tmp != &(p_link->tail); p_tmp = p_tmp->p_next)
 	{
 		node *p_first = p_tmp;
@@ -135,7 +125,7 @@ void link_insert(link* p_link, int num)
 //删除第一个数字的函数
 void link_remove_head(link *p_link)
 {
-	if(p_link->head == p_link->tail)
+	if(&(p_link->head) == &(p_link->tail))
 	{
 		return;
 	}
@@ -172,11 +162,11 @@ void link_remove_tail(link *p_link)
 void link_remove(link *p_link, int num)
 {
 	node *p_node = NULL;
-	for(p_node = &(p_link-<head); p_node != &(p_node->tail); p_node = p_node->p_next)
+	for(p_node = &(p_link->head); p_node != &(p_link->tail); p_node = p_node->p_next)
 	{
 		node *p_first = p_node;
 		node *p_mid = p_first->p_next;
-		node p_last = p_mid->p_next;
+		node *p_last = p_mid->p_next;
 		if(p_mid != &(p_link->tail) && p_mid->num == num)
 		{
 			p_first->p_next = p_last;
@@ -191,7 +181,7 @@ void link_remove(link *p_link, int num)
 //获得第一个数字的函数
 int link_get_head(const link *p_link, int *p_num)
 {
-	if(p_link->head.p_next == &(p_link->tail;))
+	if(p_link->head.p_next == &(p_link->tail))
 	{
 		return 0;
 	}
@@ -205,12 +195,12 @@ int link_get_head(const link *p_link, int *p_num)
 //获得最后一个数字的函数
 int link_get_tail(const link* p_link, int *p_num)
 {
-	node *p_node = NULL;
+	const node *p_node = NULL;
 	for(p_node = &(p_link->head); p_node != &(p_link->tail); p_node = p_node->p_next)
 	{
-		node *p_first = p_node;
-		node *p_mid = p_first->p_next;
-		node *p_last = p_mid->p_next;
+		const node *p_first = p_node;
+		const node *p_mid = p_first->p_next;
+		const node *p_last = p_mid->p_next;
 		
 		if(p_last == &(p_link->tail))
 		{
@@ -223,9 +213,27 @@ int link_get_tail(const link* p_link, int *p_num)
 
 
 //根据编号找到数字
-int link_get()
+int link_get(const link *p_link, int sn, int *p_num)
 {
-	
+	int cnt = 0;
+	const node *p_node = NULL;
+	for(p_node = &(p_link->head); p_node != &(p_link->tail); p_node = p_node->p_next)
+	{
+		const node *p_first = p_node;
+		const node *p_mid = p_first->p_next;
+		const node *p_last = p_mid->p_next;
+		if(p_mid != &(p_link->tail))
+		{
+			if(cnt == sn)
+			{
+				
+				*p_num = p_mid->num;
+				return 1;	
+			}
+			cnt++;
+		}
+	}
+	return 0;
 }
 
 
