@@ -9,6 +9,7 @@ void link_init(link *p_link)
 {
 	p_link->head.p_next = &(p_link->tail);
 	p_link->tail.p_next = NULL;
+	p_link->p_cur = NULL;
 }
 
 //链表的清理函数
@@ -137,6 +138,7 @@ void link_remove_head(link *p_link)
 	p_first->p_next = p_last;
 	free(p_mid);
 	p_mid = NULL;
+	p_link->p_cur = NULL;
 }
 
 //删除最后一个数字的代码
@@ -156,6 +158,7 @@ void link_remove_tail(link *p_link)
 			break;
 		}
 	}
+	p_link->p_cur = NULL;
 }
 
 
@@ -175,6 +178,7 @@ void link_remove(link *p_link, int num)
 			break;
 		}
 	}
+	p_link->p_cur = NULL;
 }
 
 
