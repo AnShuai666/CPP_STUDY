@@ -149,18 +149,84 @@ void link_remove_head(link *p_link)
 	p_mid = NULL;
 }
 
+//删除最后一个数字的代码
+void link_remove_tail(link *p_link)
+{
+	node *p_node = NULL;
+	for(p_node = &(p_link->head); p_node != &(p_link->tail); p_node = p_node->p_next)
+	{
+		node *p_first = p_node;
+		node *p_mid = p_first->p_next;
+		node *p_last = p_mid->p_next;
+		if(p_last == &(p_link->tail))
+		{
+			p_first->p_next = p_last;
+			free(p_mid);
+			p_mid =	NULL;
+			break;
+		}
+	}
+}
 
 
+void link_remove(link *p_link, int num)
+{
+	node *p_node = NULL;
+	for(p_node = &(p_link-<head); p_node != &(p_node->tail); p_node = p_node->p_next)
+	{
+		node *p_first = p_node;
+		node *p_mid = p_first->p_next;
+		node p_last = p_mid->p_next;
+		if(p_mid != &(p_link->tail) && p_mid->num == num)
+		{
+			p_first->p_next = p_last;
+			free(p_mid);
+			p_mid = NULL;
+			break;
+		}
+	}
+}
 
 
+//获得第一个数字的函数
+int link_get_head(const link *p_link, int *p_num)
+{
+	if(p_link->head.p_next == &(p_link->tail;))
+	{
+		return 0;
+	}
+	else
+	{
+		*p_num = p_link->head.p_next->num;
+		return 1;
+	}
+}
+
+//获得最后一个数字的函数
+int link_get_tail(const link* p_link, int *p_num)
+{
+	node *p_node = NULL;
+	for(p_node = &(p_link->head); p_node != &(p_link->tail); p_node = p_node->p_next)
+	{
+		node *p_first = p_node;
+		node *p_mid = p_first->p_next;
+		node *p_last = p_mid->p_next;
+		
+		if(p_last == &(p_link->tail))
+		{
+			*p_num = p_mid->num;
+			return 1;
+		}
+	}
+	return 0;
+}
 
 
-
-
-
-
-
-
+//根据编号找到数字
+int link_get()
+{
+	
+}
 
 
 
