@@ -151,6 +151,7 @@ void tree_remove(tree *p_tree, int num)
 		return;
 	}
 	tree *p_tmp = tree_search_in_order(p_tree, num);
+	node *p_node = p_tmp->p_node;
 	if(!(p_tmp->p_node->left.p_node))
 	{
 		//左子树不存在,就用右子树根节点替换要删除的节点
@@ -164,11 +165,11 @@ void tree_remove(tree *p_tree, int num)
 	else
 	{
 		tree *p_tmp1 = tree_search_in_order(&(p_tmp->p_node->left),p_tmp->p_node->right.p_node->num);
-		p_tmp->p_node = p_tmp->p_node->left.p_node;
 		p_tmp1->p_node = p_tmp->p_node->right.p_node;
+		p_tmp->p_node = p_tmp->p_node->left.p_node;
 	}
-	free(p_tmp->p_node);
-	p_tmp->p_node = NULL;
+	free(p_node);
+	p_node = NULL;
 }
 
 //计算树的高度的函数
