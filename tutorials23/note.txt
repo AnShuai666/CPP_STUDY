@@ -1,0 +1,67 @@
+1.环境变量
+  查看环境变量
+	env
+  环境变量的格式
+	环境变量的名字=环境变量的值
+  在bash查看环境变量的值
+	echo $环境变量的名字
+	echo "$环境变量的名字"
+	不能用单引号，不然就是显示字符串
+  如何添加一个自定义变量并为一个环境变量设置初值？
+	name=值   ##  =两端不能出现空格 只在当前shell起作用 env中没有name
+  将用户中定义变量转换为环境变量
+	export 环境变量的名字
+	export name
+
+  可以将上面两个步骤合并为一步进行
+	export name=2
+
+
+  PATH环境变量
+as@as:~/CPP_STUDY/tutorials23$ echo $PATH
+/home/yhl/anaconda3/bin:/home/yhl/bin:/home/yhl/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+ which ls 查找ls命令的环境变量位置
+
+ ls在/bin下，如果前面的环境变量有ls则会执行前面ls命令的意思
+
+  .  当前路径
+  如何将当前路径添加到PATH环境变量的后边
+  export PATH=$PATH:.
+  就可以直接执行命令
+
+  bash在启动的时候，需要先运行一个文件，然后再启动bash，这个文件成为bash的启动配置文件 ~/.bashrc
+  ~ 当前用户的家目录
+  
+ PS1 环境变量
+	用于设置bash的提示符
+	export PS1="\W\$" 
+	W 文件夹基名
+	$ 最后显示$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
