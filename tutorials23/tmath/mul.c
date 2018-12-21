@@ -1,3 +1,4 @@
+#include <tmath.h>
 int t_mul(int a, int b)
 {
 	return a * b ;

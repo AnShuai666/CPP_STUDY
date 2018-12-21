@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "tmath/tmath.h"
+#include <tmath.h> 
 typedef int (*p_func[4])(int,int);
 int main()
 {
