@@ -1,0 +1,162 @@
+代码段：字符串、常量
+数据段：全局变量、静态的局部变量
+堆：使用malloc等一系列函数向系统申请的内存空间在堆里
+栈：自动局部变量和形参
+
+二
+使用mmap(2)映射虚拟内存到物理内存
+#include <sys/mman.h>
+void *mmap(void *addr, size_t length, int prot, int flags, int fd, off_t offset);
+功能：映射文件或设备到内存空间  物理内存映射到虚拟内存空间
+参数：
+addr:	映射后的虚拟地址空间的地址（一般为NULL）
+length: 映射的长度
+prot:
+       PROT_EXEC  Pages may be executed.
+
+       PROT_READ  Pages may be read.
+
+       PROT_WRITE Pages may be written.
+
+       PROT_NONE  Pages may not be accessed.	
+flags:
+      MAP_SHARED
+      MAP_PRIVATE
+      MAP_ANONYMOUS 不支持文件映射
+fd:-1
+
+offset:0
+返回值：
+MAP_FAILED 错误 errno被设置
+成功返回映射地址
+
+int munmap(void *addr, size_t length);
+功能：解除内存映射
+参数：
+addr:是mmap(2)的返回值
+length:同mmap(2)函数中的length
+返回值：
+0 成功
+1 失败
+
+举例：使用mmap将物理内存映射到进程的虚拟地址空间
+
+
+补充：linux下一切皆文件。文件是文件 设备是文件
+值-结果参数。 就是指针类型的参数可以带值返回主调函数
+
+三、malloc的实现原理（缓存机制）
+使用代码验证malloc的缓存机制
+代码参见malloc.c
+系统一次提供最少33块，每块4k
+
+使用库函数对文件进行操作：fopen、fclose、fwrite、fread
+使用以下系统调用对文件进行操作
+open(2)、close(2)、read(2) write(2) lseek(2)
+       #include <sys/types.h>
+       #include <sys/stat.h>
+       #include <fcntl.h>
+
+       int open(const char *pathname, int flags);
+       int open(const char *pathname, int flags, mode_t mode);
+功能：打开一个文件
+参数：
+pathname:指定文件路径名
+flags:
+三选一：
+O_RDONLY:
+O_ERONLY:
+O_RDWR:
+file creation flags  
+O_CREAT:如果文件不存在，则文件被创建，需要而提供文件的权限，权限的有效性是提供的权限和umask的运算结果
+mode & ~umask
+O_EXCL:与O_CREAT一起指定，如果文件存在，则报错
+O_TRUNC:如果文件存在，将内容清零
+file status flags
+O_APPEND: 追加到文件末尾的方式打开
+mode:
+返回值：
+-1 错误 errno被设置
+返回一个新的文件描述符
+
+文件描述符 非负数
+
+补充：
+-rw-rw-r-- 1 yhl yhl  412 12月 26 15:24 mmap.c
+-	普通文件
+d	文件夹文件
+b	块设备文件
+c	字符设备文件
+l	软链接文件
+p	管道文件
+s	socket文件
+
+rw-rw-r-- 文件权限
+rw-rw-r--
+ u g  o
+   a 
+u	user	文件的属主
+g	group	文件的属组
+o	other	其他人
+a	all	所有人
+664权限
+
+umask 权限掩码
+普通文件创建时，需要将可执行权限去掉。0666
+-rw-rw-r-- 1 yhl yhl 0 12月 27 11:26 a
+umask
+0002
+
+
+文件描述符：每个进程都有自己的身份证号。pid除此之外 每个进程还有自己的户口本 PCB(process control block)
+PCB中记录了每个进程使用到计算机资源的状况。
+文件描述符中
+0 STDIN_FILENO 标准输入
+1 STDOUT_FILENO 标准输出
+2 STDERR_FILENO 标准错误输出
+
+close(2)
+       #include <unistd.h>
+
+       int close(int fd);
+功能：关闭一个文件描述符
+参数：
+fd:
+返回值：
+0 成功
+-1 错误 errono被设置
+
+
+read(2)
+       #include <unistd.h>
+
+       ssize_t read(int fd, void *buf, size_t count);
+
+
+功能：
+参数：
+fd: 指定文件描述符
+buf: 将读取出来的内容存放到buf指定的空间里
+count:指定读取的最大字节数
+返回值：
+成功
+-1 失败 errno被设
+成功 读取到的字节数
+
+write(2)
+#include <unistd.h>
+
+ssize_t write(int fd, const void *buf, size_t count);
+功能：向指定的文件里写内容
+参数：
+fd:指定文件描述符
+buf:buf指定的缓存，将这个缓存里的内容写入文件中
+count:最多写入的字节数
+返回值：
+-1 失败 errno被设置
+成功 写入文件的字节数被返回
+
+
+
+
+
