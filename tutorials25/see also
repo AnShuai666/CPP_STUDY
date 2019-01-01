@@ -1,0 +1,130 @@
+LSEEK(2)                            Linux Programmer's Manual                           LSEEK(2)
+
+NNAAMMEE
+       lseek - reposition read/write file offset
+
+SSYYNNOOPPSSIISS
+       ##iinncclluuddee <<ssyyss//ttyyppeess..hh>>
+       ##iinncclluuddee <<uunniissttdd..hh>>
+
+       ooffff__tt llsseeeekk((iinntt _f_d,, ooffff__tt _o_f_f_s_e_t,, iinntt _w_h_e_n_c_e));;
+
+DDEESSCCRRIIPPTTIIOONN
+       The  llsseeeekk()  function  repositions  the offset of the open file associated with the file
+       descriptor _f_d to the argument _o_f_f_s_e_t according to the directive _w_h_e_n_c_e as follows:
+
+       SSEEEEKK__SSEETT
+              The offset is set to _o_f_f_s_e_t bytes.
+
+       SSEEEEKK__CCUURR
+              The offset is set to its current location plus _o_f_f_s_e_t bytes.
+
+       SSEEEEKK__EENNDD
+              The offset is set to the size of the file plus _o_f_f_s_e_t bytes.
+
+       The llsseeeekk() function allows the file offset to be set beyond the end  of  the  file  (but
+       this does not change the size of the file).  If data is later written at this point, sub‐
+       sequent reads of the data in the gap (a "hole") return null bytes ('\0')  until  data  is
+       actually written into the gap.
+
+   SSeeeekkiinngg ffiillee ddaattaa aanndd hhoolleess
+       Since version 3.1, Linux supports the following additional values for _w_h_e_n_c_e:
+
+       SSEEEEKK__DDAATTAA
+              Adjust  the  file offset to the next location in the file greater than or equal to
+              _o_f_f_s_e_t containing data.  If _o_f_f_s_e_t points to data, then the file offset is set  to
+              _o_f_f_s_e_t.
+
+       SSEEEEKK__HHOOLLEE
+              Adjust  the file offset to the next hole in the file greater than or equal to _o_f_f_‐
+              _s_e_t.  If _o_f_f_s_e_t points into the middle of a hole, then the file offset is  set  to
+              _o_f_f_s_e_t.   If there is no hole past _o_f_f_s_e_t, then the file offset is adjusted to the
+              end of the file (i.e., there is an implicit hole at the end of any file).
+
+       In both of the above cases, llsseeeekk() fails if _o_f_f_s_e_t points past the end of the file.
+
+       These operations allow applications to map holes in a sparsely allocated file.  This  can
+       be  useful for applications such as file backup tools, which can save space when creating
+       backups and preserve holes, if they have a mechanism for discovering holes.
+
+       For the purposes of these operations, a hole is a sequence of zeros that  (normally)  has
+       not  been allocated in the underlying file storage.  However, a filesystem is not obliged
+       to report holes, so these operations are not a guaranteed mechanism for mapping the stor‐
+       age  space actually allocated to a file.  (Furthermore, a sequence of zeros that actually
+       has been written to the underlying storage may not be reported as a hole.)  In  the  sim‐
+       plest  implementation, a filesystem can support the operations by making SSEEEEKK__HHOOLLEE always
+       return the offset of the end of the file,  and  making  SSEEEEKK__DDAATTAA  always  return  _o_f_f_s_e_t
+       (i.e., even if the location referred to by _o_f_f_s_e_t is a hole, it can be considered to con‐
+       sist of data that is a sequence of zeros).
+
+       The __GGNNUU__SSOOUURRCCEE feature test macro must be defined in order to obtain the definitions  of
+       SSEEEEKK__DDAATTAA and SSEEEEKK__HHOOLLEE from _<_u_n_i_s_t_d_._h_>.
+
+       The SSEEEEKK__HHOOLLEE and SSEEEEKK__DDAATTAA operations are supported for the following filesystems:
+
+       *  Btrfs (since Linux 3.1)
+
+       *  OCFS (since Linux 3.2)
+
+       *  XFS (since Linux 3.5)
+
+       *  ext4 (since Linux 3.8)
+
+       *  tmpfs (since Linux 3.8)
+
+RREETTUURRNN VVAALLUUEE
+       Upon  successful completion, llsseeeekk() returns the resulting offset location as measured in
+       bytes from the beginning of the file.  On error, the value  _(_o_f_f___t_) _-_1  is  returned  and
+       _e_r_r_n_o is set to indicate the error.
+
+EERRRROORRSS
+       EEBBAADDFF  _f_d is not an open file descriptor.
+
+       EEIINNVVAALL _w_h_e_n_c_e  is  not valid.  Or: the resulting file offset would be negative, or beyond
+              the end of a seekable device.
+
+       EEOOVVEERRFFLLOOWW
+              The resulting file offset cannot be represented in an _o_f_f___t.
+
+       EESSPPIIPPEE _f_d is associated with a pipe, socket, or FIFO.
+
+       EENNXXIIOO  _w_h_e_n_c_e is SSEEEEKK__DDAATTAA or SSEEEEKK__HHOOLLEE, and the current file offset is beyond the end of
+              the file.
+
+CCOONNFFOORRMMIINNGG TTOO
+       POSIX.1-2001, POSIX.1-2008, SVr4, 4.3BSD.
+
+       SSEEEEKK__DDAATTAA  and SSEEEEKK__HHOOLLEE are nonstandard extensions also present in Solaris, FreeBSD, and
+       DragonFly BSD; they are proposed for inclusion in the next POSIX revision (Issue 8).
+
+NNOOTTEESS
+       See ooppeenn(2) for a discussion of the relationship  between  file  descriptors,  open  file
+       descriptions, and files.
+
+       Some  devices are incapable of seeking and POSIX does not specify which devices must sup‐
+       port llsseeeekk().
+
+       On Linux, using llsseeeekk() on a terminal device returns EESSPPIIPPEE.
+
+       When converting old code, substitute values for _w_h_e_n_c_e with the following macros:
+
+        old       new
+       0        SEEK_SET
+       1        SEEK_CUR
+       2        SEEK_END
+       L_SET    SEEK_SET
+       L_INCR   SEEK_CUR
+       L_XTND   SEEK_END
+
+       Note that file descriptors created by dduupp(2) or ffoorrkk(2) share the current  file  position
+       pointer, so seeking on such files may be subject to race conditions.
+
+SSEEEE AALLSSOO
+       dduupp(2), ffoorrkk(2), ooppeenn(2), ffsseeeekk(3), llsseeeekk6644(3), ppoossiixx__ffaallllooccaattee(3)
+
+CCOOLLOOPPHHOONN
+       This  page  is part of release 4.04 of the Linux _m_a_n_-_p_a_g_e_s project.  A description of the
+       project, information about reporting bugs, and the latest version of this  page,  can  be
+       found at http://www.kernel.org/doc/man-pages/.
+
+Linux                                      2015-08-08                                   LSEEK(2)

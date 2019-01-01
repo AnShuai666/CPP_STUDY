@@ -1,0 +1,215 @@
+回忆
+一、进程映射
+堆
+栈
+二、使用mmap映射物理内存到进程的虚拟地址空间
+三、malloc的缓冲机制
+brk(2)、sbrk(2)
+四、使用系统调用进行文件的操作
+open(2) close(2) read(2) write(2)
+
+今天的内容
+一、文件读写位置的操作
+如何获取文件的读写位置？
+ftell(3)
+如何操作文件的读写位置？
+使用lseek(2)
+#include <sys/types.h>
+#include <unistd.h>
+off_t lseek(int fd, off_t offset, int whence);
+功能：重新定位文件的读写位置
+参数：
+fd:open(2)的返回值，指定了文件
+offset: 相对于whence参数的偏移
+whence:
+SEEK_SET 文件的头部
+SEEK_CUR 文件的当前位置
+SEEK_END 文件的尾部
+
+
+返回值：
+-1	错误	errno被设置
+成功    返回相对于文件头部的偏移字节数。
+举例验证：lseek(2)的使用 代码参见lseek.c
+od -tx1 -tc hello
+0000000  68  65  6c  6c  6f  20  77  6f  72  6c  64  0a  68  65  6c  6c
+          h   e   l   l   o       w   o   r   l   d  \n   h   e   l   l
+0000020
+
+
+二、使用mmap将文件映射到进程的虚拟地址空间，对内存的操作直接反应到文件中。
+使用mmap将文件映射到进程的虚拟地址空间。对虚拟地址空间里的内容操作，直接反应到文件
+
+-、获取文件的元数据
+w么是文件的元数据？
+w件的元数据就是文件的属性。
+-rw-rw-r-- 1 yhl yhl   412 12月 26 15:24 mmap.c
+如何查看一个文件的元数据
+stat filename 
+$stat mmap.c 
+  文件：'mmap.c'
+  大小：412       	块：8          IO 块：4096   普通文件
+设备：805h/2053d	Inode：1352642     硬链接：1
+权限：(0664/-rw-rw-r--)  Uid：( 1000/     yhl)   Gid：( 1000/     yhl)
+最近访问：2018-12-27 17:34:27.505408167 +0800
+最近更改：2018-12-26 15:24:12.446842387 +0800
+最近改动：2018-12-26 15:24:12.494841363 +0800
+创建时间：-
+
+每个文件有且仅有一个inode。inode一个可以有多个文件
+inode中存储了文件的元数据和文件数据的数据块的编号，
+硬链接文件。两个文件的inode是同一个，这样的两个文件称为硬链接文件，
+如何创建一个文件的硬链接文件？
+tutorials26$ls -l hello 
+-rw-r--r-- 2 yhl yhl 6 12月 28 16:21 hello
+tutorials26$ls
+a.out  ha  hello  lseek.c  mmap.c  note
+tutorials26$ls -l ha
+-rw-r--r-- 2 yhl yhl 6 12月 28 16:21 ha
+hello 与 ha是同一个inode
+
+tutorials26$stat ha
+  文件：'ha'
+  大小：6         	块：8          IO 块：4096   普通文件
+设备：805h/2053d	Inode：1329133     硬链接：2
+权限：(0644/-rw-r--r--)  Uid：( 1000/     yhl)   Gid：( 1000/     yhl)
+最近访问：2018-12-28 16:21:43.281639562 +0800
+最近更改：2018-12-28 16:21:34.273608544 +0800
+最近改动：2018-12-28 17:46:52.971429344 +0800
+创建时间：-
+tutorials26$stat hello 
+  文件：'hello'
+  大小：6         	块：8          IO 块：4096   普通文件
+设备：805h/2053d	Inode：1329133     硬链接：2
+权限：(0644/-rw-r--r--)  Uid：( 1000/     yhl)   Gid：( 1000/     yhl)
+ 最近访问：2018-12-28 16:21:43.281639562 +0800
+最近更改：2018-12-28 16:21:34.273608544 +0800
+最近改动：2018-12-28 17:46:52.971429344 +0800
+创建时间：-
+软链接的建立
+tutorials26$ls -l ha
+-rw-r--r-- 1 yhl yhl 6 12月 28 16:21 ha
+tutorials26$ln -s ha hb
+tutorials26$ls -l h*
+-rw-r--r-- 1 yhl yhl 6 12月 28 16:21 ha
+lrwxrwxrwx 1 yhl yhl 2 12月 28 17:56 hb -> ha
+tutorials26$cat ha
+3210o
+tutorials26$cat hb
+3210o
+tutorials26$stat hb
+  文件：'hb' -> 'ha'
+  大小：2         	块：0          IO 块：4096   符号链接
+设备：805h/2053d	Inode：1349687     硬链接：1
+权限：(0777/lrwxrwxrwx)  Uid：( 1000/     yhl)   Gid：( 1000/     yhl)
+最近访问：2018-12-28 17:56:55.605388035 +0800
+最近更改：2018-12-28 17:56:49.953320783 +0800
+最近改动：2018-12-28 17:56:49.953320783 +0800
+创建时间：-
+
+a.out  ha  hb  hello  lseek.c  mmap.c  note
+tutorials26$rm ha
+tutorials26$cat hb
+cat: hb: 没有那个文件或目录
+tutorials26$ls
+a.out  hb  hello  lseek.c  mmap.c  note
+
+如何获取一个文件的元数据
+使用系统调用stat(2)获取文件的元数据
+       #include <sys/types.h>
+       #include <sys/stat.h>
+       #include <unistd.h>
+
+       int stat(const char *pathname, struct stat *buf);
+功能：获取文件的状态信息
+参数：
+pathname:指定了文件的名字
+buf:将文件的状态信息存储到buf指定的空间里。
+struct stat
+{
+	dev_t     st_dev;         /* ID of device containing file */
+        ino_t     st_ino;         /* inode number */
+        mode_t    st_mode;        /* protection */
+        nlink_t   st_nlink;       /* number of hard links */
+        uid_t     st_uid;         /* user ID of owner */
+        gid_t     st_gid;         /* group ID of owner */
+        dev_t     st_rdev;        /* device ID (if special file) */
+        off_t     st_size;        /* total size, in bytes */
+        blksize_t st_blksize;     /* blocksize for filesystem I/O */
+        blkcnt_t  st_blocks;      /* number of 512B blocks allocated */
+        struct timespec st_atim;  /* time of last access */
+        struct timespec st_mtim;  /* time of last modification */
+        struct timespec st_ctim;  /* time of last status change */
+
+         /* Since Linux 2.6, the kernel supports nanosecond
+         precision for the following timestamp fields.
+         For the details before Linux 2.6, see NOTES. */
+
+
+        #define st_atime st_atim.tv_sec      /* Backward compatibility */
+        #define st_mtime st_mtim.tv_sec
+        #define st_ctime st_ctim.tv_sec
+}
+
+
+返回值：
+-1 错误 errno被设置
+0 成功
+
+
+补充：
+1、如何将uid的数字转换为用户的名字？
+getpwuid(3)
+       #include <sys/types.h>
+       #include <pwd.h>
+       struct passwd *getpwuid(uid_t uid);
+功能：获取用户的信息
+参数：
+uid:指定用户的uid
+返回值：
+返回一个指向struct passwd结构体的指针
+NULL 找不到这个用户的信息或错误产生 如果是产生错误 errno被设置
+
+2、/ect/passwd文件的内容
+这个文件里存放的是系统的所有用户的信息
+yhl:x:1000:1000:yhl,,,:/home/yhl:/bin/bash
+The passwd structure is defined in <pwd.h> as follows:
+struct passwd {
+     char   *pw_name;       /* username */
+     char   *pw_passwd;     /* user password */
+     uid_t   pw_uid;        /* user ID */
+     gid_t   pw_gid;        /* group ID */
+     char   *pw_gecos;      /* user information */
+     char   *pw_dir;        /* home directory */
+     char   *pw_shell;      /* shell program */
+};
+
+3、如何通过gid获取组名？
+getgrnam(3)
+#include <sys/types.h>
+#include <grp.h>
+struct group *getgrgid(gid_t gid);
+功能：获取一条组信息
+参数：指定的组id
+struct group {
+     char   *gr_name;        /* group name */
+     char   *gr_passwd;      /* group password */
+     gid_t   gr_gid;         /* group ID */
+     char  **gr_mem;         /* NULL-terminated array of pointers
+                             to names of group members */
+};
+
+返回值：
+
+4、组信息存放在/etc/group文件中
+yhl:x:1000:
+
+
+
+四、使用c程序对文件夹进行操作
+
+
+
+
+
+
